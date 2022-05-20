@@ -2,10 +2,10 @@
 let partides = [];
 let publicrooms = [];
 var allowedCards = [];
-var cards = ['o1', 'o2', 'o3', 'o4', 'o5', 'o6', 'o7', 'o8', 'o9', 'o10', 'o11', 'o12', 
-             'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 
-             'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'b10', 'b11', 'b12', 
-             'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'e10', 'e11', 'e12'];
+var cards = ['o1', 'o2', 'o3', 'o4', 'o5', 'o6', 'o7', 'o8', 'o9', 'o10', 'o11', 'o12',
+  'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12',
+  'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'b10', 'b11', 'b12',
+  'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'e10', 'e11', 'e12'];
 
 /**
  * getQuo: Get a max number of cards of each player
@@ -25,13 +25,13 @@ function getQuo(codi) {
 function addCardCenter(codi, card) {
   // select a type card, if save card in the correct array
   if (card.startsWith('o')) {
-    partides[codi].CenterCards.or.push(card)
+    partides[codi].CenterCards.or.push(card);
   } else if (card.startsWith('c')) {
-    partides[codi].CenterCards.copes.push(card)
+    partides[codi].CenterCards.copes.push(card);
   } else if (card.startsWith('b')) {
-    partides[codi].CenterCards.bastos.push(card)
+    partides[codi].CenterCards.bastos.push(card);
   } else if (card.startsWith('e')) {
-    partides[codi].CenterCards.espasa.push(card)
+    partides[codi].CenterCards.espasa.push(card);
   }
 }
 
@@ -105,7 +105,7 @@ function checkCenterCards(typeCard, arrayCenterCards, quo) {
       // Only allowed min less 1, and type card concat
       allowedCards.push(typeCard + (min - 1));
     }
-    
+
     // If max is minor that variable quo
     if (max < quo) {
       // Only allowed max more 1, and type card concat
@@ -117,22 +117,22 @@ function checkCenterCards(typeCard, arrayCenterCards, quo) {
 /**
  * startcounter: start counter
  * **/
-function startcounter(skip, io, codi) {
-  // Filter cards of players, if exists in allowed cards array
-  var compare = partides[codi].jugadors[partides[codi].torn].cards.filter(element => allowedCards.includes(element)).length;
+function startcounter(io, codi) {
+  // If else, start set interval turn over 60000 ms => 60 s
+  partides[codi].contador = setInterval(comparator, 60000, io, codi);
+}
 
-  // If skip is false
-  if (!skip) {
-    // Execute turn over
-    turnover(io, codi);
-  } else {
-    // If true, If compare is equals to 0
+/**
+ * comparator: filter if cards is in allowed cards array, if compare is equals to 0, start turn
+ * **/
+function comparator(io, codi) {
+  var compare;
+  if (partides[codi].jugadors !== undefined) {
+    compare = partides[codi].jugadors[partides[codi].torn].cards.filter(element => allowedCards.includes(element)).length;
+
     if (compare == 0) {
-      // Execute turn over
+      startcounter(io, codi);
       turnover(io, codi);
-    } else {
-      // If else, start set interval turn over 60000 ms
-      partides[codi].contador = setInterval(turnover, 60000, [io, codi]);
     }
   }
 }
@@ -141,11 +141,9 @@ function startcounter(skip, io, codi) {
  * nextturn: next turn
  * **/
 function nextturn(io, codi) {
-  // If torn game is less to length players array less 1, increment torn to 1
   if (partides[codi].torn < partides[codi].jugadors.length - 1) {
     partides[codi].torn++;
   } else {
-    // If else, torn is equals to 0
     partides[codi].torn = 0;
   }
 
@@ -158,7 +156,6 @@ function nextturn(io, codi) {
  * turnover: player turn over
  * **/
 function turnover(io, codi) {
-  // If game is not equals to undefined, clear interval
   if (partides[codi] !== undefined) {
     clearInterval(partides[codi].contador);
     io.to(codi).emit('chat message', partides[codi].jugadors[partides[codi].torn][1] + ' ha esgotat el seu torn', 'sistema');
@@ -177,7 +174,7 @@ function controller(io) {
 
   // Defined a event websocket 'connection' in server
   io.on('connection', (socket) => {
-    
+
     // Defined a event websocket 'chat message' in server
     socket.on('chat message', (msg, codi) => {
       // send var msg value call event websocket 'chat message' in client
@@ -222,7 +219,7 @@ function controller(io) {
           socket.emit('error', 'La sala esta completa!', 'roomjoin');
         } else {
           // player join to room
-          partides[data.codi].jugadors.push([socket.id, socket.name])
+          partides[data.codi].jugadors.push([socket.id, socket.name]);
           io.to(data.codi).emit('jugadors', { jugadors: partides[data.codi].jugadors });
           io.to(socket.id).emit('partida', { partida: partides[data.codi] });
 
@@ -243,8 +240,8 @@ function controller(io) {
       } else {
         // create a new room and join to admin of room
         let codiTaula = socket.id.substring(1, 5);
-        socket.codi = codiTaula;
         socket.join(codiTaula);
+        socket.codi = codiTaula;
         partida = data;
         partida.id = codiTaula;
         partida.admin = socket.id;
@@ -254,7 +251,7 @@ function controller(io) {
 
         io.to(socket.id).emit('partida', { partida: partides[codiTaula] });
         io.to(socket.id).emit('jugadors', { jugadors: partida.jugadors });
-        
+
         // If room is public, save room in rooms public array
         if (data.public) {
           publicrooms[codiTaula] = [codiTaula, partida.nom, 1];
@@ -297,16 +294,17 @@ function controller(io) {
             partides[socket.codi].jugadors[i].cards = [];
 
             for (let y = 0; y < getQuo(socket.codi); y++) {
-              partides[socket.codi].jugadors[i].cards.push(cards[numcard])
+              partides[socket.codi].jugadors[i].cards.push(cards[numcard]);
               numcard++;
               if (cards[numcard] == "o5") {
                 //defines the player who has 5 gold card
                 partides[socket.codi].torn = i;
               }
             }
-
+            partides[socket.codi].contador = [];
+            startcounter(io, socket.codi);
             // sort card of each player
-            partides[socket.codi].jugadors[i].cards.sort()
+            partides[socket.codi].jugadors[i].cards.sort();
 
             //send cards to client
             io.to(partides[socket.codi].jugadors[i][0]).emit('initcards', {
@@ -326,48 +324,8 @@ function controller(io) {
         io.to(socket.codi).emit('counterfrontend');
         delete publicrooms[socket.codi];
       }
-    
+
     });
-
-
-    function turnover() {
-      console.log(partides[socket.codi])
-      if (partides[socket.codi] !== undefined) {
-        clearInterval(partides[socket.codi].contador);
-        io.to(socket.codi).emit('chat message', partides[socket.codi].jugadors[partides[socket.codi].torn][1] + ' ha esgotat el seu torn', 'sistema');
-        nextturn();
-        // startcounter();
-      }
-    }
-
-    function startcounter(skip) {
-      console.log("skip " + skip)
-      //partides[socket.codi].jugadors[partides[socket.codi].torn][0] != socket.id
-      console.log("jugadors[] " + partides[socket.codi].jugadors[partides[socket.codi].torn])
-      if (!skip) {
-        console.log("turnover skip")
-        turnover();
-      }else {
-          partides[socket.codi].contador = setInterval(turnover, 60000);
-          console.log(partides[socket.codi].contador)
-        }
-    }
-
-    function nextturn() {
-      console.log(partides[socket.codi].torn);
-      console.log(partides[socket.codi].jugadors.length);
-
-      if (partides[socket.codi].torn < partides[socket.codi].jugadors.length - 1) {
-        partides[socket.codi].torn++;
-      } else {
-        partides[socket.codi].torn = 0;
-      }
-      io.to(partides[socket.codi].jugadors[partides[socket.codi].torn][0]).emit('turnfrontend');
-      io.to(socket.codi).emit('chat message', 'torn de ' + partides[socket.codi].jugadors[partides[socket.codi].torn][1], 'sistema');
-      io.to(socket.codi).emit('counterfrontend');
-    }
-
-
 
     socket.on("turn", function (card) {
       if (partides[socket.codi].jugadors[partides[socket.codi].torn][0] != socket.id) {
@@ -397,9 +355,8 @@ function controller(io) {
           if (partides[socket.codi] !== undefined) {
             clearInterval(partides[socket.codi].contador);
           }
-
-          startcounter(false, io, socket.codi);
-
+          startcounter(io, socket.codi);
+          turnover(io, socket.codi);
           io.to(socket.codi).emit('chat message', 'torn de ' + partides[socket.codi].jugadors[partides[socket.codi].torn][1], 'sistema');
 
           allowedCards = [];
@@ -426,7 +383,6 @@ function controller(io) {
             });
           }
         } else {
-          startcounter(true, io, socket.codi);
           socket.emit('error', 'En Aquest Moment no pots tirar aquesta carta. :-(');
         }
       }
@@ -463,6 +419,16 @@ function controller(io) {
       }
     });
 
+    socket.on("nameplayerfrontendd", function (data) {
+      var name = partides[socket.codi].jugadors;
+      for (var i = 0; i < partides[socket.codi].jugadors; i++) {
+        name[i] = partides[socket.codi].jugadors[i];
+      }
+      io.to(socket.codi).emit('nameplayerfrontend', {
+        name1: name[0], name2: name[1], name3: name[2], name4: name[3], totalplayers: partides[socket.codi].jugadors.length
+      });
+    });
+
     // Defined a event websocket 'leaveroom' in server
     socket.on("leaveroom", function (data) {
       if (typeof socket.codi !== 'undefined') {
@@ -493,16 +459,9 @@ function controller(io) {
       }
     });
 
-    
+
     socket.on('compare', () => {
-      var compare;      
-      compare = partides[socket.codi].jugadors[partides[socket.codi].torn].cards.filter(element => allowedCards.includes(element)).length;
-      if(compare == 0){
-        turnover();
-      }
-      console.log("jugadors[] " + partides[socket.codi].jugadors[partides[socket.codi].torn])
-      console.log("allowedCards  " + allowedCards)
-      console.log("cartas tirables " + compare)
+      comparator(io, socket.codi);
     });
 
     // Defined a event websocket 'disconnect' in server
@@ -530,6 +489,8 @@ function controller(io) {
           delete partides[socket.codi];
           delete publicrooms[socket.codi];
         }
+        // Force reload of the game to all room
+        io.to(socket.codi).emit('closeroom');
       }
     });
   });
