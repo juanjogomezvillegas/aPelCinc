@@ -423,7 +423,7 @@ function create() {
 
         self.win[0] = self.add.sprite(x, y, 'win').setInteractive();
         self.win[0].setDepth(20);
-        self.win[0].setScale(0.15);
+        // self.win[0].setScale(0.15);
 
         var p0 = new Phaser.Math.Vector2(300, 300);
         var p1 = new Phaser.Math.Vector2(300, 100);
